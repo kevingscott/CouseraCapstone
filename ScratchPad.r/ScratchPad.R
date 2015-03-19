@@ -38,6 +38,8 @@ addGram <- function(row){
 }
 
 twitter_file_name <- "~/SwiftKey_Data/final/en_US/en_US.twitter.txt"
+blogs_file_name <- "~/SwiftKey_Data/final/en_US/en_US.blogs.txt"
+news_file_name <- "~/SwiftKey_Data/final/en_US/en_US.news.txt"
 
 addFileToWordCount <- function(filename)
 {
@@ -77,3 +79,19 @@ addCountsToHashMap <- function(some_lines)
   
   apply(counts,1,addGram)
 }
+
+environmentToDataFrame <- function(map)
+{
+  keys <- ls(map)
+  df <- data.frame(x= keys, count = integer(length(keys)))
+  
+  #this sucks, there has to be a more elegeant way
+  row <- 0
+  for (v in ls(map)) {
+    df[row,2] <- map[[v]]
+    row <- row + 1
+    print(row)
+  }
+  return(df)
+}
+
