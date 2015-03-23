@@ -15,6 +15,7 @@ trigram_token <- function(these_lines){
   
   return(tokens)
 }
+sample_rate <- .15
 
 addFileToWordCount <- function(filename,count_df)
 {
@@ -22,6 +23,8 @@ addFileToWordCount <- function(filename,count_df)
   while(!done)
   {
     lines <- readLines(con,buffer_size)
+    
+    lines <- lines[sample(1:buffer_size,floor(sample_rate*buffer_size))]
     
     tokens <- trigram_token(lines)
     
