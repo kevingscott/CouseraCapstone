@@ -24,6 +24,9 @@ addFileToWordCount <- function(filename,count_df)
   {
     lines <- readLines(con,buffer_size)
     
+    if(length(lines) != buffer_size)
+      done <- TRUE
+    
     lines <- lines[sample(1:buffer_size,floor(sample_rate*buffer_size))]
     
     tokens <- trigram_token(lines)
@@ -37,8 +40,7 @@ addFileToWordCount <- function(filename,count_df)
     
     print(rows_proc)
     
-    if(length(lines) != buffer_size)
-      done <- TRUE
+   
   }
   
   return(count_df)
@@ -63,5 +65,37 @@ sum_blogs_count <- NULL
 global_counts <- data.frame(word = character(),prev_word = character(), freq = integer())
 global_counts <-addFileToWordCount(news_file_name,global_counts)
 sum_news_counts <- ddply(global_counts,'x',summarize,freq=sum(freq))
-write.csv(sum_news_counts,file="sum_newsr_counts_tro")
+write.csv(sum_news_counts,file="sum_newsr_counts_tri")
 sum_news_counts <- NULL
+
+sum_newsr_counts <- read.csv("~/sum_newsr_counts_tri", stringsAsFactors=FALSE)
+sum_twitter_counts <- read.csv("~/sum_twitter_counts_tri", stringsAsFactors=FALSE)
+sum_blogs_counts <- read.csv("~/sum_blogs_counts_tri", stringsAsFactors=FALSE)
+
+twitter_news_counts <- rbind(sum_twitter_counts,sum_newsr_counts)
+all_counts <- rbind(twitter_news_counts,sum_blogs_counts)
+all_counts = data.table(all_counts[,2:3])
+all_counts_sum <- all_counts[,sum(freq),by=x]
+
+write.csv(all_counts ,file="allr_counts_tri")
+
+all_counts_tri <- read.csv("~/allr_counts_tri", stringsAsFactors=FALSE)
+
+done <- FALSE
+buffer_size <- 100000
+rows <- 1
+
+write_con <- file('tri_final','w')
+while(!done)
+{
+  dt <- data.table(all_counts_tri[rows:(rows+buffer_size),])
+  dt <- dt[,c("first_word","second_word","third_word"):=data.table(str_split_fixed(x," ",3))]
+  write.csv(dt[,3:6,with=FALSE],write_con)
+  rows <- rows + buffer_size
+  print(rows)
+  
+  if(rows >= nrow(all_counts_tri))
+    done <- TRUE
+}
+
+
