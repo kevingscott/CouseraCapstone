@@ -45,7 +45,7 @@ for(count in wordCount$freq){
 plot(words_needed_for_percent[1:75,])
 
 ```
-Another way to look at this is the summary of the word distrubtions
+Another way to look at this of course is a histogram of word distrubutions
 ```{r, echo=FALSE}
 summary(wordCount$freq)
 ```
