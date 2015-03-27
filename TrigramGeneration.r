@@ -98,4 +98,28 @@ while(!done)
     done <- TRUE
 }
 
+all_counts_final <- read.csv("~/tri_final", stringsAsFactors=FALSE)
+all_counts_final$bigram <- paste(all_counts_final$first_word, all_counts_final$second_word)
 
+all_counts_final <- data.table(all_counts_final)
+setkey(all_counts_final,bigram)
+all_counts_final$freq <- as.numeric(all_counts_final$freq)
+total_bigram_counts <- all_counts_final[,sum(freq),by=bigram]
+setkey(total_bigram_counts,bigram)
+
+
+setPercent <- function(row){
+  
+  total <- total_bigram_counts[row[1],]
+  
+  if(is.na(total$count) == TRUE){
+    return(0)
+  }
+  
+  #print(row)
+  #print(total)
+  
+  return (as.numeric(row[2])/total$count)
+}
+
+total_bigram_counts$probability <- apply(all_counts_final[,c(6,2),with=FALSE],1,setPercent)

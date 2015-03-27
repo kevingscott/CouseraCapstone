@@ -1,0 +1,80 @@
+---
+title: "Captsone Project Milestone"
+author: "Kevin Scott"
+date: "Thursday, March 26, 2015"
+output: html_document
+---
+
+# Introduction
+This document provides a quick overview of the data for this project, as well as my progress and general plan for completing the assignment and completing the model
+
+# Data Overview
+The data provided was from three different sources, news articles, blog posts and twitter messages.  A very basic summary of the metadata of these files is as follows:
+
+File  | Lines | Words | Chracters
+------------- | -------------| -------------| -------------
+en_US.blogs.txt  | 899288 | 37334690 | 210160014
+en_US.news.txt | 1010242 | 34372720 | 205811889
+en_US.twitter.txt  | 2360148 | 30374206 | 167105338
+total | 4269678 | 102081616 | 583077241
+
+The first step was to provide a small amount of cleanup on these files.  I first removed all the non-english characters from the text, and then changed all words to lower-case.  With these standardizations of the words, some other summary statistics can be created.  One of the most interesting aspects of the word counts is that the most common words make up a huge proportion of the overal corpus.  For example, in the three files combined, "the" is by far the most common word, making up a total of X percent of the overall text.  The next word Y takes up Z percent of the overall corpus, and so on.  The following graph shows how many words it would require to reach certain percentages of the overall corpus.  The graph only show the words required to get from 1 to 75 percent because there is a very long tail to reach the higher percentage, this is due to the large number of very rare words.
+```{r, echo=FALSE}
+wordCount <- read.csv("~/word_counts.csv")
+wordCount <- wordCount[which(!is.na(wordCount$x)),]
+wordCount <- wordCount[order(wordCount$freq,decreasing=TRUE),]
+
+words_needed_for_percent = data.frame(words=integer(100),percentage=seq(1:100))
+
+total_words <- sum(wordCount$freq,na.rm=TRUE)
+
+current_count <- 0
+current_total_words <- 0
+current_percentage <- 1
+for(count in wordCount$freq){
+  
+  current_total_words <- current_total_words + count
+  current_count <- current_count + 1
+  
+  while((current_total_words * 100 / total_words) >= current_percentage && current_percentage <= 100){
+    words_needed_for_percent$words[current_percentage] = current_count
+    current_percentage <- current_percentage + 1
+  }
+}
+
+plot(words_needed_for_percent[1:75,])
+
+```
+Another way to look at this is the summary of the word distrubtions
+```{r, echo=FALSE}
+summary(wordCount$freq)
+```
+
+The bigrams are distrubuted in a much flatter, altho note there is still a long tail of very rare n-grams
+```{r, echo=FALSE}
+wordCount_bigram <- read.csv("~/words_total")
+wordCount_bigram$freq <- as.numeric(wordCount_bigram $freq)
+wordCount_bigram  <- wordCount_bigram[which(!is.na(wordCount_bigram $freq)),]
+wordCount_bigram  <- wordCount_bigram[order(wordCount_bigram $freq,decreasing=TRUE),]
+
+bigrams_needed_for_percent = data.frame(bigrams=integer(100),percentage=seq(1:100))
+
+total_words <- sum(wordCount_bigram$freq,na.rm=TRUE)
+
+current_count <- 0
+current_total_words <- 0
+current_percentage <- 1
+for(count in wordCount_bigram$freq){
+  
+  current_total_words <- current_total_words + count
+  current_count <- current_count + 1
+  
+  while((current_total_words * 100 / total_words) >= current_percentage){
+    bigrams_needed_for_percent$bigrams[current_percentage] = current_count
+    current_percentage <- current_percentage + 1
+  }
+}
+
+plot(bigrams_needed_for_percent$bigrams,bigrams_needed_for_percent$percentage,xlab="Bigrams Needed",col="red")
+
+```
